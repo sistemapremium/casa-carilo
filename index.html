@@ -58,6 +58,17 @@ body{background:var(--noche);color:var(--crema);font-family:'Sora',sans-serif;ov
 <div class="hud" id="lugar">UBICACIÓN — <b id="lugar-txt">VISTA EXTERIOR</b></div>
 <div class="hud" id="hint"><b>ARRASTRÁ</b> para girar la casa · <b>RUEDA</b> para acercarte</div>
 <button id="entrar">🚶 ENTRAR A LA CASA</button>
+<button id="btn-tour" style="position:fixed;bottom:140px;left:50%;transform:translateX(-50%);z-index:21;background:linear-gradient(120deg,#C9A96A,#E3CD9E);color:var(--noche);border:0;font-family:'Sora',sans-serif;font-weight:800;font-size:14px;letter-spacing:.18em;text-transform:uppercase;padding:20px 44px;cursor:pointer;border-radius:4px;box-shadow:0 22px 60px -12px rgba(201,169,106,.7)">🌐 TOUR FOTOREAL 360°</button>
+<div id="tour-ui" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:22;display:none;gap:8px;flex-wrap:wrap;justify-content:center;max-width:96vw">
+  <button class="nb" data-pano="0">Frente</button>
+  <button class="nb" data-pano="1">Living</button>
+  <button class="nb" data-pano="2">Biblioteca</button>
+  <button class="nb" data-pano="3">Suite</button>
+  <button class="nb" data-pano="4">Galería</button>
+  <button class="nb" data-pano="5">Pileta</button>
+  <button class="nb" data-pano="6">Vinoteca</button>
+  <button class="nb" id="tour-cerrar" style="border-color:var(--oro);color:var(--oro)">✕ Salir del tour</button>
+</div>
 <button id="btn-renders" class="hud" style="pointer-events:auto;bottom:24px;right:26px;background:rgba(14,26,38,.8);border:1px solid var(--oro);color:var(--oro);font-family:'Sora',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:12px 18px;cursor:pointer;border-radius:4px;backdrop-filter:blur(8px)">📷 Renders 4K</button>
 <button id="btn-video" class="hud" style="pointer-events:auto;bottom:24px;right:170px;background:rgba(14,26,38,.8);border:1px solid var(--oro);color:var(--oro);font-family:'Sora',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:12px 18px;cursor:pointer;border-radius:4px;backdrop-filter:blur(8px)">🎬 Video</button>
 <div id="cine" style="position:fixed;inset:0;z-index:41;background:rgba(4,8,14,.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px">
@@ -98,16 +109,16 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 const $=s=>document.querySelector(s);
 const renderer=new THREE.WebGLRenderer({canvas:$('#escena'),antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.05;
+renderer.toneMappingExposure=.95;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 
 const escena=new THREE.Scene();
-escena.fog=new THREE.Fog(0xE8C9A0,80,260);
+escena.fog=new THREE.Fog(0xDCC3A2,150,520);
 
 const cam=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,500);
 cam.position.set(-26,15,-26);
@@ -129,7 +140,7 @@ U.sunPosition.value.copy(solDir);
 const sol=new THREE.DirectionalLight(0xFFCE96,2.6);
 sol.position.copy(solDir).multiplyScalar(60);
 sol.castShadow=true;
-sol.shadow.mapSize.set(2048,2048);
+sol.shadow.mapSize.set(1024,1024);
 Object.assign(sol.shadow.camera,{left:-42,right:42,top:45,bottom:-45,far:160});
 sol.shadow.bias=-0.0004;
 escena.add(sol);
@@ -138,7 +149,7 @@ escena.add(new THREE.HemisphereLight(0xF4C48E,0x4a5a3a,.55));
 /* ===== POST: bloom cine ===== */
 const composer=new EffectComposer(renderer);
 composer.addPass(new RenderPass(escena,cam));
-const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.28,.7,.88);
+const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth/2,innerHeight/2),.16,.6,.9);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 function foco(x,y,z,int=14,color=0xFFE7C0){const l=new THREE.PointLight(color,int,11,1.8);l.position.set(x,y,z);escena.add(l);}
@@ -442,7 +453,7 @@ function pino(x,z,s=1){
   const geoP=new THREE.ConeGeometry(.05,.34,4);
   geoP.translate(0,.17,0);
   const matP=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.95});
-  const N=1600, inst=new THREE.InstancedMesh(geoP,matP,N);
+  const N=750, inst=new THREE.InstancedMesh(geoP,matP,N);
   const mtx=new THREE.Matrix4(), col=new THREE.Color();
   let k=0;
   while(k<N){
@@ -586,6 +597,11 @@ const reloj=new THREE.Clock();
 renderer.setAnimationLoop(()=>{
   const dt=Math.min(reloj.getDelta(),.05);
   const t=reloj.elapsedTime;
+  if(modo==='tour'){
+    tourCam.rotation.set(tourPitch,tourYaw,0,'YXZ');
+    renderer.render(tourScene,tourCam);
+    return;
+  }
   if(modo==='orbita') orbit.update();
   else if(lock.isLocked||esTactil) caminar(dt);
   if(aguaMesh){ txAgua.offset.x=Math.sin(t*.15)*.06; txAgua.offset.y=t*.018; aguaMesh.position.y=4.62+Math.sin(t*1.1)*.012; }
@@ -593,6 +609,7 @@ renderer.setAnimationLoop(()=>{
 });
 addEventListener('resize',()=>{
   cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix();
+  tourCam.aspect=innerWidth/innerHeight; tourCam.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
   composer.setSize(innerWidth,innerHeight);
 });
@@ -629,6 +646,65 @@ addEventListener('keydown',e=>{
 });
 /* si los renders todavía no están subidos, ocultar el botón */
 {const test=new Image();test.onerror=()=>{$('#btn-renders').style.display='none';};test.src=RENDERS[0].f;}
+
+/* ===== TOUR 360° FOTOREAL (panoramas Higgsfield) ===== */
+const PANOS=[
+  {f:'panos/p1.jpg',t:'FRENTE — LA CALLE AL ATARDECER'},
+  {f:'panos/p2.jpg',t:'LIVING DOBLE ALTURA'},
+  {f:'panos/p3.jpg',t:'BIBLIOTECA — BALCÓN AL LIVING'},
+  {f:'panos/p4.jpg',t:'SUITE PRINCIPAL — LA TORRE'},
+  {f:'panos/p5.jpg',t:'GALERÍA · PARRILLA'},
+  {f:'panos/p6.jpg',t:'PARQUE · PILETA'},
+  {f:'panos/p7.jpg',t:'GARAGE · VINOTECA'},
+];
+const tourScene=new THREE.Scene();
+const tourCam=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,120);
+const tourGeo=new THREE.SphereGeometry(50,64,48); tourGeo.scale(-1,1,1);
+const tourMat=new THREE.MeshBasicMaterial({color:0x0E1A26});
+const tourEsfera=new THREE.Mesh(tourGeo,tourMat);
+tourScene.add(tourEsfera);
+const tourLoader=new THREE.TextureLoader();
+const tourCache={};
+let tourYaw=0, tourPitch=0, tourIdx=0, arrastrando=false, ax=0, ay=0;
+function tourCargar(i){
+  tourIdx=(i+PANOS.length)%PANOS.length;
+  document.querySelectorAll('#tour-ui [data-pano]').forEach(b=>b.classList.toggle('on',+b.dataset.pano===tourIdx));
+  $('#lugar-txt').textContent='TOUR 360° — '+PANOS[tourIdx].t;
+  const f=PANOS[tourIdx].f;
+  if(tourCache[f]){tourMat.map=tourCache[f];tourMat.color.set(0xffffff);tourMat.needsUpdate=true;return;}
+  tourLoader.load(f,tx=>{tx.colorSpace=THREE.SRGBColorSpace;tourCache[f]=tx;tourMat.map=tx;tourMat.color.set(0xffffff);tourMat.needsUpdate=true;});
+}
+function tourAbrir(){
+  if(lock.isLocked)lock.unlock();
+  modo='tour'; orbit.enabled=false;
+  $('#tour-ui').style.display='flex'; $('#niveles').style.display='none';
+  $('#entrar').style.display='none'; $('#btn-tour').style.display='none'; $('#mira').style.display='none';
+  $('#hint').innerHTML='<b>ARRASTRÁ</b> para mirar alrededor · <b>RUEDA</b> para hacer zoom · estás PARADO en el ambiente';
+  tourYaw=0;tourPitch=0;tourCam.fov=72;tourCam.updateProjectionMatrix();
+  tourCargar(tourIdx);
+}
+function tourSalir(){
+  $('#tour-ui').style.display='none'; $('#niveles').style.display='flex';
+  $('#btn-tour').style.display='block';
+  irA('orbita');
+}
+$('#btn-tour').addEventListener('click',e=>{e.stopPropagation();tourAbrir();});
+$('#tour-cerrar').addEventListener('click',e=>{e.stopPropagation();tourSalir();});
+document.querySelectorAll('#tour-ui [data-pano]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();tourCargar(+b.dataset.pano);}));
+renderer.domElement.addEventListener('pointerdown',e=>{if(modo==='tour'){arrastrando=true;ax=e.clientX;ay=e.clientY;}});
+addEventListener('pointermove',e=>{
+  if(modo==='tour'&&arrastrando){
+    tourYaw-=(e.clientX-ax)*.0032; tourPitch+=(e.clientY-ay)*.0032;
+    tourPitch=Math.max(-1.35,Math.min(1.35,tourPitch));
+    ax=e.clientX; ay=e.clientY;
+  }
+});
+addEventListener('pointerup',()=>arrastrando=false);
+addEventListener('wheel',e=>{
+  if(modo==='tour'){tourCam.fov=Math.max(38,Math.min(95,tourCam.fov+e.deltaY*.03));tourCam.updateProjectionMatrix();}
+},{passive:true});
+/* ocultar el botón del tour hasta que los panoramas estén subidos */
+{const t2=new Image();t2.onerror=()=>{$('#btn-tour').style.display='none';};t2.src=PANOS[0].f;}
 
 /* ===== CINE: videos cinematográficos (Higgsfield) ===== */
 const CLIPS=[
