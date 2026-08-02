@@ -58,6 +58,16 @@ body{background:var(--noche);color:var(--crema);font-family:'Sora',sans-serif;ov
 <div class="hud" id="lugar">UBICACIÓN — <b id="lugar-txt">VISTA EXTERIOR</b></div>
 <div class="hud" id="hint"><b>ARRASTRÁ</b> para girar la casa · <b>RUEDA</b> para acercarte</div>
 <button id="entrar">🚶 ENTRAR A LA CASA</button>
+<button id="btn-renders" class="hud" style="pointer-events:auto;bottom:24px;right:26px;background:rgba(14,26,38,.8);border:1px solid var(--oro);color:var(--oro);font-family:'Sora',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:12px 18px;cursor:pointer;border-radius:4px;backdrop-filter:blur(8px)">📷 Renders 4K</button>
+<div id="galeria" style="position:fixed;inset:0;z-index:40;background:rgba(6,10,16,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+  <img id="gal-img" style="max-width:92vw;max-height:76vh;box-shadow:0 30px 90px rgba(0,0,0,.6);border:1px solid rgba(201,169,106,.3)" alt="">
+  <div id="gal-cap" style="font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.22em;color:var(--oro)"></div>
+  <div style="display:flex;gap:10px">
+    <button class="nb" id="gal-prev">← Anterior</button>
+    <button class="nb" id="gal-next">Siguiente →</button>
+    <button class="nb" id="gal-cerrar">✕ Cerrar</button>
+  </div>
+</div>
 <div id="mira"></div>
 <div id="vineta"></div>
 <div id="grain"></div>
@@ -67,6 +77,11 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 /* CASA CARILO — fiel al anteproyecto (carpeta jun-2026)
    x este(+)/oeste(-) · z sur/parque(+) / norte/calle(-) · y altura
@@ -83,24 +98,40 @@ renderer.toneMappingExposure=1.05;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 
 const escena=new THREE.Scene();
-escena.background=new THREE.Color(0xBFD9E8);
-escena.fog=new THREE.Fog(0xBFD9E8,70,240);
+escena.fog=new THREE.Fog(0xE8C9A0,80,260);
 
-const cam=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,400);
+const cam=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.08,500);
 cam.position.set(-26,15,-26);
 
 const pmrem=new THREE.PMREMGenerator(renderer);
 escena.environment=pmrem.fromScene(new RoomEnvironment(renderer),.04).texture;
 
+/* ===== CIELO ATMOSFÉRICO (atardecer dorado) ===== */
+const cielo=new Sky();
+cielo.scale.setScalar(2000);
+escena.add(cielo);
+const U=cielo.material.uniforms;
+U.turbidity.value=6; U.rayleigh.value=2.2;
+U.mieCoefficient.value=.02; U.mieDirectionalG.value=.85;
+const solDir=new THREE.Vector3().setFromSphericalCoords(1, THREE.MathUtils.degToRad(90-11), THREE.MathUtils.degToRad(-118));
+U.sunPosition.value.copy(solDir);
+
 /* ===== LUCES ===== */
-const sol=new THREE.DirectionalLight(0xFFF2DC,2.4);
-sol.position.set(-28,44,-20);
+const sol=new THREE.DirectionalLight(0xFFCE96,2.6);
+sol.position.copy(solDir).multiplyScalar(60);
 sol.castShadow=true;
 sol.shadow.mapSize.set(2048,2048);
-Object.assign(sol.shadow.camera,{left:-42,right:42,top:45,bottom:-45,far:130});
+Object.assign(sol.shadow.camera,{left:-42,right:42,top:45,bottom:-45,far:160});
 sol.shadow.bias=-0.0004;
 escena.add(sol);
-escena.add(new THREE.HemisphereLight(0xCFE4F0,0x55663f,.5));
+escena.add(new THREE.HemisphereLight(0xF4C48E,0x4a5a3a,.55));
+
+/* ===== POST: bloom cine ===== */
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(escena,cam));
+const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.28,.7,.88);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
 function foco(x,y,z,int=14,color=0xFFE7C0){const l=new THREE.PointLight(color,int,11,1.8);l.position.set(x,y,z);escena.add(l);}
 
 /* ===== TEXTURAS ===== */
@@ -369,9 +400,15 @@ caja(6.4,3.3,.14,M.listones,-3.0,N1+ .1,7.86,{cs:false});
 
 /* ---------- PILETA 4×9 + deck (parque alto, sur) ---------- */
 piso(8,12,0,4.9+.02,26,M.deck);
+let aguaMesh=null;
+const txAgua=tex((g,w,h)=>{g.fillStyle='#2E9AC4';g.fillRect(0,0,w,h);
+  for(let i=0;i<40;i++){g.strokeStyle='rgba(220,245,255,'+(0.12+Math.random()*0.2)+')';g.lineWidth=1+Math.random()*2;
+    g.beginPath();g.ellipse(Math.random()*w,Math.random()*h,10+Math.random()*30,4+Math.random()*10,Math.random()*3,0,7);g.stroke();}},2,4);
+M.agua.map=txAgua;
 {
   const agua=new THREE.Mesh(new THREE.BoxGeometry(4,.5,9),M.agua);
   agua.position.set(0,4.62,26); agua.receiveShadow=true; escena.add(agua);
+  aguaMesh=agua;
   caja(4.5,.12,.3,M.hormigon,0,4.86,21.35);caja(4.5,.12,.3,M.hormigon,0,4.86,30.65);
   caja(.3,.12,9.6,M.hormigon,-2.25,4.86,26);caja(.3,.12,9.6,M.hormigon,2.25,4.86,26);
   for(let i=0;i<2;i++)caja(.7,.35,1.9,M.tela,-1.2+i*2.4,4.92,22.6);
@@ -390,6 +427,33 @@ function pino(x,z,s=1){
   g.position.set(x,y,z); escena.add(g);
 }
 [[-10,-8,1.2],[-8.5,-3,1.05],[-11,3,1.3],[-9,8,1.1],[-10.5,14,1.2],[-4,-11,1.0],[3,-11.5,1.15],[8,-9,1.0],[9,-2,1.25],[9.5,5,1.1],[8.5,12,1.3],[-6,13,1.05],[5,15,1.2],[-3,17,1.1],[10,18,1.25],[-12,22,1.35],[12,26,1.2],[-7,28,1.15]].forEach(p=>pino(p[0],p[1],p[2]));
+
+/* ---------- PASTO instanciado (vida al médano) ---------- */
+{
+  const geoP=new THREE.ConeGeometry(.05,.34,4);
+  geoP.translate(0,.17,0);
+  const matP=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.95});
+  const N=1600, inst=new THREE.InstancedMesh(geoP,matP,N);
+  const mtx=new THREE.Matrix4(), col=new THREE.Color();
+  let k=0;
+  while(k<N){
+    const x=-14+Math.random()*28, z=-15+Math.random()*48;
+    if(Math.abs(x)<7.6&&z>-9&&z<9) continue;
+    if(Math.abs(x)<4.6&&z>19.4&&z<32.6) continue;
+    if(x>-1.7&&x<3.7&&z<-7) continue;
+    if(x>-3.3&&x<5.5&&z>7.6&&z<12.1) continue;
+    const s=.7+Math.random()*.9;
+    mtx.makeRotationY(Math.random()*6.28);
+    mtx.scale(new THREE.Vector3(s,s*(0.8+Math.random()*.7),s));
+    mtx.setPosition(x,terrenoY(x,z),z);
+    inst.setMatrixAt(k,mtx);
+    col.setHSL(.25+Math.random()*.07,.5,.28+Math.random()*.14);
+    inst.setColorAt(k,col);
+    k++;
+  }
+  inst.castShadow=false; inst.receiveShadow=true;
+  escena.add(inst);
+}
 
 /* ---------- CARTELES DE AMBIENTES ---------- */
 function cartel(txt,x,y,z,esc=1){
@@ -512,15 +576,50 @@ addEventListener('click',()=>{ if(modo==='caminar'&&!lock.isLocked&&!esTactil) l
 const reloj=new THREE.Clock();
 renderer.setAnimationLoop(()=>{
   const dt=Math.min(reloj.getDelta(),.05);
+  const t=reloj.elapsedTime;
   if(modo==='orbita') orbit.update();
   else if(lock.isLocked||esTactil) caminar(dt);
-  renderer.render(escena,cam);
+  if(aguaMesh){ txAgua.offset.x=Math.sin(t*.15)*.06; txAgua.offset.y=t*.018; aguaMesh.position.y=4.62+Math.sin(t*1.1)*.012; }
+  composer.render();
 });
 addEventListener('resize',()=>{
   cam.aspect=innerWidth/innerHeight; cam.updateProjectionMatrix();
   renderer.setSize(innerWidth,innerHeight);
+  composer.setSize(innerWidth,innerHeight);
 });
 setTimeout(()=>$('#loader').classList.add('off'),900);
+
+/* ===== GALERÍA RENDERS 4K (Higgsfield) ===== */
+const RENDERS=[
+  {f:'renders/r1.jpg',t:'FRENTE — ATARDECER DESDE LA CALLE'},
+  {f:'renders/r2.jpg',t:'LA CASA DESDE EL PARQUE Y LA PILETA'},
+  {f:'renders/r3.jpg',t:'LIVING DOBLE ALTURA AL BOSQUE'},
+  {f:'renders/r4.jpg',t:'COCINA CON ISLA DE PIEDRA'},
+  {f:'renders/r5.jpg',t:'BIBLIOTECA ASOMADA AL LIVING'},
+  {f:'renders/r6.jpg',t:'SUITE PRINCIPAL — LA TORRE'},
+  {f:'renders/r7.jpg',t:'GALERÍA · PARRILLA DE NOCHE'},
+  {f:'renders/r8.jpg',t:'VINOTECA DE VIDRIO — GARAGE'},
+];
+let galIdx=0;
+const galEl=$('#galeria'), galImg=$('#gal-img'), galCap=$('#gal-cap');
+function galVer(i){galIdx=(i+RENDERS.length)%RENDERS.length;galImg.src=RENDERS[galIdx].f;galCap.textContent=(galIdx+1)+' / '+RENDERS.length+' — '+RENDERS[galIdx].t;}
+function galAbrir(){if(lock.isLocked)lock.unlock();galEl.style.display='flex';galVer(galIdx);}
+function galCerrar(){galEl.style.display='none';}
+$('#btn-renders').addEventListener('click',e=>{e.stopPropagation();galAbrir();});
+$('#gal-prev').addEventListener('click',e=>{e.stopPropagation();galVer(galIdx-1);});
+$('#gal-next').addEventListener('click',e=>{e.stopPropagation();galVer(galIdx+1);});
+$('#gal-cerrar').addEventListener('click',e=>{e.stopPropagation();galCerrar();});
+galEl.addEventListener('click',e=>e.stopPropagation());
+addEventListener('keydown',e=>{
+  if(e.code==='KeyR'){galEl.style.display==='none'?galAbrir():galCerrar();}
+  if(galEl.style.display!=='none'){
+    if(e.code==='ArrowRight')galVer(galIdx+1);
+    if(e.code==='ArrowLeft')galVer(galIdx-1);
+    if(e.code==='Escape')galCerrar();
+  }
+});
+/* si los renders todavía no están subidos, ocultar el botón */
+{const test=new Image();test.onerror=()=>{$('#btn-renders').style.display='none';};test.src=RENDERS[0].f;}
 </script>
 </body>
 </html>
