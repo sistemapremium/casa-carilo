@@ -86,9 +86,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 <section id="portada" style="background-image:url('fotos/frente.jpg')">
   <div class="k">Cariló · Partido de Pinamar</div>
   <h1>Casa Cariló</h1>
-  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde, planta baja vidriada abierta al parque con la pileta, suite y dormitorios arriba y un mirador de vidrio. Recorrela en 3D: elegí el piso, mirá cómo entra el sol a cualquier hora y entrá a cada ambiente.</p>
+  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde, planta baja vidriada abierta al parque con la pileta, suite y dormitorios arriba y un mirador de vidrio. Caminala en 360° ambiente por ambiente, o abrí la maqueta 3D para elegir el piso y ver cómo entra el sol a cualquier hora.</p>
   <div class="acc">
-    <button class="bt pri" id="btn-entrar" disabled>Recorrer la casa</button>
+    <a class="bt pri" href="recorrido.html" style="text-decoration:none;display:inline-block">Caminar la casa · 360°</a>
+    <button class="bt" id="btn-entrar" disabled>Maqueta 3D · pisos y sol</button>
     <button class="bt" id="btn-fotos">Ver fotos</button>
   </div>
   <div id="carga">Cargando la casa…</div>
@@ -297,7 +298,7 @@ new GLTFLoader().load('modelo/casa.glb',g=>{
   borrar.forEach(o=>o.parent&&o.parent.remove(o));
   g.scene.children.forEach(ch=>{const pf=prefijo(ch);if(pf in NIV)porNivel[NIV[pf]].push(ch);});
   casa.add(g.scene);
-  $('#carga').textContent='Listo.'; const b=$('#btn-entrar'); b.disabled=false; b.textContent='Recorrer la casa';
+  $('#carga').textContent='Listo.'; const b=$('#btn-entrar'); b.disabled=false; b.textContent='Maqueta 3D · pisos y sol';
 },x=>{if(x.total)$('#carga').textContent='Cargando la casa… '+Math.round(x.loaded/x.total*100)+'%';},
 e=>{$('#carga').textContent='No se pudo cargar el modelo.';console.error(e);});
 
