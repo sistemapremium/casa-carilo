@@ -86,7 +86,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <section id="portada" style="background-image:url('fotos/frente.jpg')">
   <div class="k">Cariló · Partido de Pinamar</div>
   <h1>Casa Cariló</h1>
-  <p>Vivienda unifamiliar de 4 niveles sobre el médano, entre pinos. Recorrela en 3D: elegí el piso, mirá cómo entra el sol a cualquier hora y entrá a cada ambiente.</p>
+  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde, pileta, planta baja vidriada, suite y dormitorios arriba y un mirador de vidrio. Recorrela en 3D: elegí el piso, mirá cómo entra el sol a cualquier hora y entrá a cada ambiente.</p>
   <div class="acc">
     <button class="bt pri" id="btn-entrar" disabled>Recorrer la casa</button>
     <button class="bt" id="btn-fotos">Ver fotos</button>
@@ -103,7 +103,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <nav id="pisos" class="panel">
   <div class="t">Pisos</div>
   <button class="pb on" data-p="-1">Toda la casa <span>exterior</span></button>
-  <button class="pb" data-p="3">Suite <span>+9,9 m</span></button>
+  <button class="pb" data-p="3">Mirador <span>+9,9 m</span></button>
   <button class="pb" data-p="2">1er piso <span>+6,6 m</span></button>
   <button class="pb" data-p="1">Planta baja <span>+3,2 m</span></button>
   <button class="pb" data-p="0">Garage <span>±0,0 m</span></button>
@@ -152,15 +152,15 @@ const MOVIL=matchMedia('(max-width:760px)').matches||/Android|iPhone|iPad/i.test
 
 /* ===== ambientes: posición en el modelo (x, altura, z) + foto real ===== */
 const AMB=[
- {n:'Frente',p:-1,pos:[2,6.5,-9],foto:'fotos/frente.jpg',s:'Desde la calle · atardecer',cam:[17,4.2,-27],mira:[0,6.2,-3]},
- {n:'Parque y pileta',p:-1,pos:[0,5.5,25],foto:'fotos/parque.jpg',s:'La casa desde la pileta',cam:[2,8,40],mira:[0,6,4]},
- {n:'Garage y vinoteca',p:0,pos:[-3,1.4,-3],foto:'fotos/vinoteca.jpg',s:'Nivel ±0,0',cam:[2.6,1.6,-9.6],mira:[-4.5,1.3,-1.8]},
- {n:'Living',p:1,pos:[-3.5,4.6,4.5],foto:'fotos/living.jpg',s:'Doble altura al parque',cam:[1.0,4.9,1.4],mira:[-4.8,4.6,6.4]},
- {n:'Cocina y comedor',p:1,pos:[3.6,4.6,4],foto:'fotos/cocina.jpg',s:'Isla de piedra · comedor',cam:[-2.6,4.7,6.6],mira:[4.8,4.2,1.6]},
- {n:'Galería y parrilla',p:1,pos:[0,4.6,9.8],foto:'fotos/galeria.jpg',s:'Quincho al parque',cam:[-4.8,4.85,9.2],mira:[5.6,4.3,11.2]},
- {n:'Biblioteca',p:2,pos:[-3,8,1.9],foto:'fotos/biblioteca.jpg',s:'Balcón sobre el living',cam:[-0.3,8.25,1.25],mira:[-4.6,4.4,6.8]},
- {n:'Family y terraza',p:2,pos:[3.6,8,-2],foto:'',s:'1er piso',cam:[1.0,8.2,-0.4],mira:[5.5,7.6,-4]},
- {n:'Suite principal',p:3,pos:[2.5,11.4,2],foto:'fotos/suite.jpg',s:'La torre de vidrio',cam:[-0.2,11.6,-1.2],mira:[3.8,10.8,5.5]},
+ {n:'Frente',p:-1,pos:[0,7,-1],foto:'fotos/frente.jpg',s:'Desde la calle · garage, pileta y la casa',cam:[1.5,8.5,-31],mira:[0,5.2,1]},
+ {n:'Parque',p:-1,pos:[0,5.5,16],foto:'fotos/parque.jpg',s:'El contrafrente al bosque',cam:[2,8,34],mira:[0,5,5]},
+ {n:'Garage y vinoteca',p:0,pos:[-4.5,1.5,1.5],foto:'fotos/vinoteca.jpg',s:'Nivel ±0,0',cam:[-1.5,1.55,-8.5],mira:[-4.8,1.35,2.0]},
+ {n:'Living',p:1,pos:[-3,4.6,5.5],foto:'fotos/living.jpg',s:'Abierto a la pileta',cam:[2.2,4.85,8.6],mira:[-5.0,4.5,2.0]},
+ {n:'Cocina y comedor',p:1,pos:[4.5,4.6,5],foto:'fotos/cocina.jpg',s:'Isla de piedra · comedor',cam:[-2.6,4.85,9.4],mira:[6.5,4.4,3.0]},
+ {n:'Galería y parrilla',p:1,pos:[1,4.6,12.6],foto:'fotos/galeria.jpg',s:'Quincho al parque',cam:[-4.8,4.85,12.4],mira:[7.6,4.3,13.0]},
+ {n:'Dormitorios',p:2,pos:[-3,8,6],foto:'',s:'1er piso',cam:[-1.6,8.2,3.6],mira:[-4.2,7.4,8.5]},
+ {n:'Suite principal',p:2,pos:[4,8,6],foto:'fotos/suite.jpg',s:'1er piso',cam:[2.8,8.3,3.3],mira:[4.6,7.4,9.0]},
+ {n:'Mirador',p:3,pos:[0,11.4,5.2],foto:''/*mirador*/,s:'El cubo de vidrio',cam:[0,11.6,7.2],mira:[0,10.6,1.0]},
 ];
 const NIV={L0:0,PB:1,L1:2,L2:3};
 const CORTE=[1.7,4.95,8.35,11.8];
@@ -303,7 +303,7 @@ e=>{$('#carga').textContent='No se pudo cargar el modelo.';console.error(e);});
 
 /* luces interiores (de noche) */
 const lucesInt=[];
-[[-3.5,5.6,4.5],[3.4,5.6,4.5],[3.6,5.6,2.2],[0,5.6,9.8],[-3,8.8,1.8],[3.6,9,-2],[2.6,12.3,2.5],[-4.2,2.2,-1.6],[3.5,2.4,-5],[-2,5.4,-5]]
+ [[-3,5.6,5.5],[4.5,5.6,6],[3,5.6,3],[1,5.6,12.6],[-7,5.6,5],[-3,9,6],[4,9,6],[0,12.2,5.2],[0,2.4,-4],[-5,2.2,1.5]]
  .forEach(p=>{const l=new THREE.PointLight(0xffc98a,0,14,1.6);l.position.set(...p);escena.add(l);lucesInt.push(l);});
 
 /* ===== sol real de Cariló ===== */
