@@ -86,7 +86,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <section id="portada" style="background-image:url('fotos/frente.jpg')">
   <div class="k">Cariló · Partido de Pinamar</div>
   <h1>Casa Cariló</h1>
-  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde, pileta, planta baja vidriada, suite y dormitorios arriba y un mirador de vidrio. Recorrela en 3D: elegí el piso, mirá cómo entra el sol a cualquier hora y entrá a cada ambiente.</p>
+  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde, planta baja vidriada abierta al parque con la pileta, suite y dormitorios arriba y un mirador de vidrio. Recorrela en 3D: elegí el piso, mirá cómo entra el sol a cualquier hora y entrá a cada ambiente.</p>
   <div class="acc">
     <button class="bt pri" id="btn-entrar" disabled>Recorrer la casa</button>
     <button class="bt" id="btn-fotos">Ver fotos</button>
@@ -152,10 +152,10 @@ const MOVIL=matchMedia('(max-width:760px)').matches||/Android|iPhone|iPad/i.test
 
 /* ===== ambientes: posición en el modelo (x, altura, z) + foto real ===== */
 const AMB=[
- {n:'Frente',p:-1,pos:[0,7,-1],foto:'fotos/frente.jpg',s:'Desde la calle · garage, pileta y la casa',cam:[1.5,8.5,-31],mira:[0,5.2,1]},
- {n:'Parque',p:-1,pos:[0,5.5,16],foto:'fotos/parque.jpg',s:'El contrafrente al bosque',cam:[2,8,34],mira:[0,5,5]},
+ {n:'Frente',p:-1,pos:[0,7,-1],foto:'fotos/frente.jpg',s:'Desde la calle · garage con techo verde y la casa',cam:[1.5,8.5,-31],mira:[0,5.2,1]},
+ {n:'Parque y pileta',p:-1,pos:[0,6.2,28],foto:'fotos/parque.jpg',s:'Contrafrente al bosque · galería, jardín y pileta',cam:[6,10.5,46],mira:[0,5.5,8]},
  {n:'Garage y vinoteca',p:0,pos:[-4.5,1.5,1.5],foto:'fotos/vinoteca.jpg',s:'Nivel ±0,0',cam:[-1.5,1.55,-8.5],mira:[-4.8,1.35,2.0]},
- {n:'Living',p:1,pos:[-3,4.6,5.5],foto:'fotos/living.jpg',s:'Abierto a la pileta',cam:[2.2,4.85,8.6],mira:[-5.0,4.5,2.0]},
+ {n:'Living',p:1,pos:[-3,4.6,5.5],foto:'fotos/living.jpg',s:'Abierto al parque',cam:[2.2,4.85,8.6],mira:[-5.0,4.5,2.0]},
  {n:'Cocina y comedor',p:1,pos:[4.5,4.6,5],foto:'fotos/cocina.jpg',s:'Isla de piedra · comedor',cam:[-2.6,4.85,9.4],mira:[6.5,4.4,3.0]},
  {n:'Galería y parrilla',p:1,pos:[1,4.6,12.6],foto:'fotos/galeria.jpg',s:'Quincho al parque',cam:[-4.8,4.85,12.4],mira:[7.6,4.3,13.0]},
  {n:'Dormitorios',p:2,pos:[-3,8,6],foto:'',s:'1er piso',cam:[-1.6,8.2,3.6],mira:[-4.2,7.4,8.5]},
