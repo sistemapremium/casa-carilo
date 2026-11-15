@@ -84,7 +84,7 @@ import * as THREE from 'three';
 /* Coordenadas: x = este, y = norte (calle), z = arriba, en metros (las del modelo de Blender).
    Rumbo h en grados de brújula: 0 = norte (calle), 90 = este, 180 = sur (parque).
    Cada panorama es equirectangular con el NORTE en el centro; cov = grados verticales que cubre la imagen. */
-const VER = '2';
+const VER = '3';
 const NODOS = [
  {id:'calle', n:'Desde la calle', g:'Exterior', p:[1.0,24.0,1.65], h:180,
    links:[['terraza',[-7.8,13.6,0.1],'Subir a la casa','esc'],['garage',[0,10.6,0.1],'Garage','esc']]},
@@ -98,14 +98,14 @@ const NODOS = [
    links:[['jardin'],['fondo']]},
  {id:'fondo', n:'Fondo del parque', g:'Exterior', p:[0.5,-38.5,6.97], h:0,
    links:[['pileta']]},
- {id:'living', n:'Living', g:'Planta baja', p:[-2.8,-8.6,4.8], h:335,
+ {id:'living', n:'Living (doble altura)', g:'Planta baja', p:[-3.0,-4.6,4.8], h:200,
    links:[['comedor'],['cocina'],['galeria'],['terraza']]},
  {id:'comedor', n:'Comedor', g:'Planta baja', p:[1.8,-5.0,4.8], h:40,
    links:[['living'],['cocina'],['terraza'],['galeria'],
           ['dormitorio',[0,-6.4,5.0],'Subir al 1er piso','esc'],['vinoteca',[0,-2.5,3.3],'Bajar al garage','esc']]},
  {id:'cocina', n:'Cocina', g:'Planta baja', p:[6.8,-8.6,4.8], h:315,
    links:[['comedor'],['galeria']]},
- {id:'dormitorio', n:'Dormitorio', g:'1er piso', p:[-3.4,-4.6,8.2], h:190,
+ {id:'dormitorio', n:'Dormitorio', g:'1er piso', p:[-4.5,-4.6,8.2], h:70,
    links:[['suite'],['terraza_alta'],['comedor',[0,-3.7,6.7],'Bajar a planta baja','esc'],['mirador',[1.6,-6.4,7.3],'Subir al mirador','esc']]},
  {id:'suite', n:'Suite principal', g:'1er piso', p:[3.9,-4.9,8.2], h:180,
    links:[['dormitorio'],['terraza_alta'],['mirador',[1.6,-6.4,7.3],'Subir al mirador','esc'],['comedor',[0,-3.7,6.7],'Bajar a planta baja','esc']]},
