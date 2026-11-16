@@ -83,10 +83,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 <body>
 <canvas id="c"></canvas>
 
-<section id="portada" style="background-image:url('fotos/frente.jpg')">
+<section id="portada" style="background-image:url('fotos/6d_frente.jpg')">
   <div class="k">Cariló · Partido de Pinamar</div>
   <h1>Casa Cariló</h1>
-  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde, planta baja vidriada abierta al parque con la pileta, suite y dormitorios arriba y un mirador de vidrio. Caminala en 360° ambiente por ambiente, o abrí la maqueta 3D para elegir el piso y ver cómo entra el sol a cualquier hora.</p>
+  <p>Vivienda unifamiliar sobre el médano, entre pinos: garage con techo verde y terraza de entrada, planta baja vidriada abierta a la galería y la pileta, living en doble altura, cinco dormitorios, sala de juegos y la suite en una caja de vidrio arriba de todo. Caminala en 360° ambiente por ambiente, o abrí la maqueta 3D para elegir el piso y ver cómo entra el sol a cualquier hora.</p>
   <div class="acc">
     <a class="bt pri" href="recorrido.html" style="text-decoration:none;display:inline-block">Caminar la casa · 360°</a>
     <button class="bt" id="btn-entrar" disabled>Maqueta 3D · pisos y sol</button>
@@ -104,7 +104,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <nav id="pisos" class="panel">
   <div class="t">Pisos</div>
   <button class="pb on" data-p="-1">Toda la casa <span>exterior</span></button>
-  <button class="pb" data-p="3">Mirador <span>+9,9 m</span></button>
+  <button class="pb" data-p="3">Suite <span>+9,9 m</span></button>
   <button class="pb" data-p="2">1er piso <span>+6,6 m</span></button>
   <button class="pb" data-p="1">Planta baja <span>+3,2 m</span></button>
   <button class="pb" data-p="0">Garage <span>±0,0 m</span></button>
@@ -131,7 +131,8 @@ button{font:inherit;color:inherit;cursor:pointer}
       <div class="nav">
         <button class="bt" id="ficha-ant">‹</button>
         <button class="bt" id="ficha-sig">›</button>
-        <button class="bt pri" id="ficha-caminar">Caminar acá en 3D</button>
+        <button class="bt pri" id="ficha-360">Ver en 360°</button>
+        <button class="bt" id="ficha-caminar">Caminar en la maqueta</button>
         <button class="bt" id="ficha-cerrar">Cerrar</button>
       </div>
     </div>
@@ -152,16 +153,24 @@ const $=s=>document.querySelector(s);
 const MOVIL=matchMedia('(max-width:760px)').matches||/Android|iPhone|iPad/i.test(navigator.userAgent);
 
 /* ===== ambientes: posición en el modelo (x, altura, z) + foto real ===== */
+/* versión 6D (16-nov-2026): posiciones en coordenadas three = (x, altura, -y del modelo de Blender); r = punto del recorrido 360° */
 const AMB=[
- {n:'Frente',p:-1,pos:[0,7,-1],foto:'fotos/frente.jpg',s:'Desde la calle · garage con techo verde y la casa',cam:[1.5,8.5,-31],mira:[0,5.2,1]},
- {n:'Parque y pileta',p:-1,pos:[0,6.2,28],foto:'fotos/parque.jpg',s:'Contrafrente al bosque · galería, jardín y pileta',cam:[6,10.5,46],mira:[0,5.5,8]},
- {n:'Garage y vinoteca',p:0,pos:[-4.5,1.5,1.5],foto:'fotos/vinoteca.jpg',s:'Nivel ±0,0',cam:[-1.5,1.55,-8.5],mira:[-4.8,1.35,2.0]},
- {n:'Living',p:1,pos:[-3,4.6,5.5],foto:'fotos/living.jpg',s:'Abierto al parque',cam:[2.2,4.85,8.6],mira:[-5.0,4.5,2.0]},
- {n:'Cocina y comedor',p:1,pos:[4.5,4.6,5],foto:'fotos/cocina.jpg',s:'Isla de piedra · comedor',cam:[-2.6,4.85,9.4],mira:[6.5,4.4,3.0]},
- {n:'Galería y parrilla',p:1,pos:[1,4.6,12.6],foto:'fotos/galeria.jpg',s:'Quincho al parque',cam:[-4.8,4.85,12.4],mira:[7.6,4.3,13.0]},
- {n:'Dormitorios',p:2,pos:[-3,8,6],foto:'',s:'1er piso',cam:[-1.6,8.2,3.6],mira:[-4.2,7.4,8.5]},
- {n:'Suite principal',p:2,pos:[4,8,6],foto:'fotos/suite.jpg',s:'1er piso',cam:[2.8,8.3,3.3],mira:[4.6,7.4,9.0]},
- {n:'Mirador',p:3,pos:[0,11.4,5.2],foto:'fotos/mirador.jpg',s:'El cubo de vidrio',cam:[0,11.6,7.2],mira:[0,10.6,1.0]},
+ {n:'Frente',p:-1,pos:[0,7.5,-7],foto:'fotos/6d_frente.jpg',r:'calle',s:'Desde la calle · garage con techo verde, terraza de entrada y la casa',cam:[1.5,8.5,-31],mira:[0,5.2,-2]},
+ {n:'Parque y pileta',p:-1,pos:[0,5.2,15],foto:'fotos/6d_parque.jpg',r:'jardin',s:'Galería, pileta paralela y parque plano',cam:[6,10.5,46],mira:[0,5.5,4]},
+ {n:'Garage y vinoteca',p:0,pos:[-4.8,1.5,-1.75],foto:'',r:'vinoteca',s:'Nivel ±0,0 · 4 autos',cam:[0,1.6,-4.0],mira:[-4.8,1.35,-1.75]},
+ {n:'Recibidor',p:1,pos:[-1.9,4.6,-4.6],foto:'',r:'recibidor',s:'Planta baja · placard y entrada principal',cam:[-1.9,4.85,-4.6],mira:[-3.0,4.6,2.0]},
+ {n:'Sala de TV',p:1,pos:[-6.6,4.6,-4.8],foto:'',r:'sala_tv',s:'Planta baja',cam:[-4.6,4.85,-3.9],mira:[-7.0,4.5,-3.6]},
+ {n:'Dormitorio 4',p:1,pos:[2.5,4.6,-4.6],foto:'',r:'dorm4',s:'Planta baja · en suite',cam:[3.9,4.85,-4.6],mira:[2.0,4.2,-3.6]},
+ {n:'Living',p:1,pos:[-5.5,4.6,3.8],foto:'fotos/6d_living.jpg',r:'living',s:'Doble altura · hogar de piedra · abierto al parque',cam:[1.2,4.85,2.2],mira:[-7.0,5.0,4.0]},
+ {n:'Cocina y comedor',p:1,pos:[2.0,4.6,3.7],foto:'fotos/6d_cocina.jpg',r:'comedor',s:'Isla · comedor para 8',cam:[-3.0,4.85,2.6],mira:[5.0,4.4,4.5]},
+ {n:'Galería y parrilla',p:1,pos:[0,4.6,9.4],foto:'fotos/6d_galeria.jpg',r:'galeria',s:'Sillones, mesa y parrilla en el muro de piedra',cam:[-6.0,4.85,9.6],mira:[5.1,4.3,9.3]},
+ {n:'Huéspedes',p:1,pos:[7.2,4.6,3.8],foto:'',r:'huesped',s:'Planta baja · baño y vestidor',cam:[5.9,4.85,3.9],mira:[7.2,4.2,1.9]},
+ {n:'Estar y biblioteca',p:2,pos:[-4.4,8,0.5],foto:'',r:'estar',s:'1er piso · asomado a la doble altura',cam:[-3.2,8.2,0.3],mira:[-5.0,7.0,4.0]},
+ {n:'Dormitorios 2 y 3',p:2,pos:[2.2,8,3.4],foto:'',r:'dorm2',s:'1er piso',cam:[-1.3,8.2,3.0],mira:[1.5,7.4,3.4]},
+ {n:'Dormitorio 5',p:2,pos:[-4.9,8,-4.0],foto:'',r:'dorm5',s:'1er piso',cam:[-3.6,8.2,-4.6],mira:[-5.0,7.4,-3.6]},
+ {n:'Sala de juegos',p:2,pos:[3.5,8,-4.4],foto:'',r:'juegos',s:'1er piso · biblioteca',cam:[3.3,8.2,-3.3],mira:[5.0,7.4,-4.0]},
+ {n:'Suite principal',p:3,pos:[0.5,11.4,1.8],foto:'fotos/6d_suite.jpg',r:'suite',s:'Caja de vidrio · cama king · terraza',cam:[1.7,11.5,1.7],mira:[-1.0,10.6,1.2]},
+ {n:'Terraza de la suite',p:3,pos:[-5.2,10.6,2.4],foto:'',r:'terraza_alta',s:'Deck y techo verde',cam:[-5.2,11.55,2.4],mira:[0,9.5,20]},
 ];
 const NIV={L0:0,PB:1,L1:2,L2:3};
 const CORTE=[1.7,4.95,8.35,11.8];
@@ -280,7 +289,7 @@ function material(orig,esCasa){
 const casa=new THREE.Group(); escena.add(casa);
 const porNivel={0:[],1:[],2:[],3:[]}; const pinos=[]; const colisionables=[]; const pisosRay=[];
 function prefijo(o){let p=o;while(p){const m=(p.name||'').match(/^(L0|PB|L1|L2|EST|EXT|ENV|PINO)/);if(m)return m[1];p=p.parent;}return '';}
-new GLTFLoader().load('modelo/casa.glb',g=>{
+new GLTFLoader().load('modelo/casa.glb?v=6d',g=>{
   const borrar=[];
   g.scene.traverse(o=>{
     if(o.isLight||o.isCamera){borrar.push(o);return;}
@@ -304,7 +313,7 @@ e=>{$('#carga').textContent='No se pudo cargar el modelo.';console.error(e);});
 
 /* luces interiores (de noche) */
 const lucesInt=[];
- [[-3,5.6,5.5],[4.5,5.6,6],[3,5.6,3],[1,5.6,12.6],[-7,5.6,5],[-3,9,6],[4,9,6],[0,12.2,5.2],[0,2.4,-4],[-5,2.2,1.5]]
+ [[-5.5,5.8,3.8],[-0.6,5.8,3.8],[3.1,5.8,3.7],[-1.9,5.8,-4.6],[-6.6,5.8,-4.8],[2.7,5.8,-4.8],[-2,5.6,9.3],[-4.6,9.2,0.6],[2.2,9.2,3.4],[0.5,12.2,1.9],[0,2.4,-6.9],[-4.8,2.2,-1.8]]
  .forEach(p=>{const l=new THREE.PointLight(0xffc98a,0,14,1.6);l.position.set(...p);escena.add(l);lucesInt.push(l);});
 
 /* ===== sol real de Cariló ===== */
@@ -380,12 +389,13 @@ const conFoto=()=>AMB.map((a,i)=>i).filter(i=>AMB[i].foto);
 let fichaIdx=0;
 function abrirFicha(i){
   fichaIdx=i;const a=AMB[i];
-  if(!a.foto){entrarCaminar(i);return;}
+  if(!a.foto){location.href='recorrido.html#'+(a.r||'jardin');return;}
   $('#ficha-img').src=a.foto;$('#ficha-img').alt=a.n;$('#ficha-t').textContent=a.n;$('#ficha-s').textContent=a.s;$('#ficha').classList.add('on');}
 function pasarFicha(d){const L=conFoto();let k=L.indexOf(fichaIdx);k=(k+d+L.length)%L.length;abrirFicha(L[k]);}
 $('#ficha-cerrar').onclick=()=>$('#ficha').classList.remove('on');
 $('#ficha-ant').onclick=()=>pasarFicha(-1);$('#ficha-sig').onclick=()=>pasarFicha(1);
 $('#ficha-caminar').onclick=()=>{$('#ficha').classList.remove('on');entrarCaminar(fichaIdx);};
+$('#ficha-360').onclick=()=>{location.href='recorrido.html#'+(AMB[fichaIdx].r||'jardin');};
 $('#btn-galeria').onclick=()=>abrirFicha(conFoto()[0]);
 $('#btn-fotos').onclick=()=>abrirFicha(conFoto()[0]);
 addEventListener('keydown',e=>{if(!$('#ficha').classList.contains('on'))return;if(e.key==='Escape')$('#ficha').classList.remove('on');if(e.key==='ArrowRight')pasarFicha(1);if(e.key==='ArrowLeft')pasarFicha(-1);});

@@ -84,39 +84,58 @@ import * as THREE from 'three';
 /* Coordenadas: x = este, y = norte (calle), z = arriba, en metros (las del modelo de Blender).
    Rumbo h en grados de brújula: 0 = norte (calle), 90 = este, 180 = sur (parque).
    Cada panorama es equirectangular con el NORTE en el centro; cov = grados verticales que cubre la imagen. */
-const VER = '3';
+const VER = '6d';
+/* Versión 6D (16-nov-2026): la casa apoya sobre 10,35 m del garage y se estira 3,45 m hacia la calle;
+   PB con sala de TV, recibidor y dormitorio 4 en suite; 1er piso con dormitorio 5, baño 2 y sala de juegos;
+   suite en la caja de vidrio con terraza; escalera en U en el mismo lugar en los 4 niveles. */
 const NODOS = [
  {id:'calle', n:'Desde la calle', g:'Exterior', p:[1.0,24.0,1.65], h:180,
-   links:[['terraza',[-7.8,13.6,0.1],'Subir a la casa','esc'],['garage',[0,10.6,0.1],'Garage','esc']]},
- {id:'terraza', n:'Terraza de entrada', g:'Exterior', p:[0.5,1.4,4.8], h:180,
-   links:[['living'],['comedor'],['calle',[-7.8,0.4,3.25],'Bajar a la calle','esc']]},
- {id:'galeria', n:'Galería y parrilla', g:'Exterior', p:[3.6,-12.6,4.8], h:90,
-   links:[['comedor'],['living'],['cocina'],['jardin']]},
- {id:'jardin', n:'Jardín', g:'Exterior', p:[0.0,-18.6,5.57], h:0,
-   links:[['galeria'],['pileta']]},
- {id:'pileta', n:'Pileta', g:'Exterior', p:[-3.9,-27.0,6.53], h:35, cov:154.29,
-   links:[['jardin'],['fondo']]},
- {id:'fondo', n:'Fondo del parque', g:'Exterior', p:[0.5,-38.5,6.97], h:0,
-   links:[['pileta']]},
- {id:'living', n:'Living (doble altura)', g:'Planta baja', p:[-3.0,-4.6,4.8], h:200,
-   links:[['comedor'],['cocina'],['galeria'],['terraza']]},
- {id:'comedor', n:'Comedor', g:'Planta baja', p:[1.8,-5.0,4.8], h:40,
-   links:[['living'],['cocina'],['terraza'],['galeria'],
-          ['dormitorio',[0,-6.4,5.0],'Subir al 1er piso','esc'],['vinoteca',[0,-2.5,3.3],'Bajar al garage','esc']]},
- {id:'cocina', n:'Cocina', g:'Planta baja', p:[6.8,-8.6,4.8], h:315,
-   links:[['comedor'],['galeria']]},
- {id:'dormitorio', n:'Dormitorio', g:'1er piso', p:[-4.5,-4.6,8.2], h:70,
-   links:[['suite'],['terraza_alta'],['comedor',[0,-3.7,6.7],'Bajar a planta baja','esc'],['mirador',[1.6,-6.4,7.3],'Subir al mirador','esc']]},
- {id:'suite', n:'Suite principal', g:'1er piso', p:[3.9,-4.9,8.2], h:180,
-   links:[['dormitorio'],['terraza_alta'],['mirador',[1.6,-6.4,7.3],'Subir al mirador','esc'],['comedor',[0,-3.7,6.7],'Bajar a planta baja','esc']]},
- {id:'terraza_alta', n:'Terraza del 1er piso', g:'1er piso', p:[1.0,-12.3,8.2], h:180,
-   links:[['suite'],['dormitorio']]},
- {id:'mirador', n:'Mirador', g:'Mirador', p:[-0.5,-6.2,11.5], h:180,
-   links:[['suite',[1.6,-3.6,10.0],'Bajar al 1er piso','esc']]},
- {id:'garage', n:'Garage', g:'Garage', p:[0.2,5.5,1.6], h:200,
-   links:[['vinoteca'],['calle',[0,10.2,0.1],'Salir a la calle','esc']]},
- {id:'vinoteca', n:'Vinoteca', g:'Garage', p:[-2.4,-1.0,1.6], h:270,
-   links:[['garage'],['comedor',[0,1.4,0.5],'Subir a la casa','esc']]},
+   links:[['terraza',[-7.8,12.6,0.7],'Subir a la casa','esc'],['garage',[0,10.6,0.05],'Garage']]},
+ {id:'terraza', n:'Terraza de entrada', g:'Exterior', p:[-0.5,7.9,4.85], h:180,
+   links:[['recibidor',[-1.9,6.4,3.22],'Entrar'],['calle',[-7.8,7.3,3.25],'Bajar a la calle','esc']]},
+ {id:'galeria', n:'Galería y parrilla', g:'Exterior', p:[2.4,-9.4,4.8], h:90,
+   links:[['comedor'],['living'],['cocina'],['pileta'],['jardin'],['huesped',[7.2,-7.4,3.2],'Dormitorio de huéspedes']]},
+ {id:'pileta', n:'Pileta y solarium', g:'Exterior', p:[-6.2,-15.5,4.8], h:90,
+   links:[['galeria'],['jardin']]},
+ {id:'jardin', n:'Parque', g:'Exterior', p:[2.0,-21.0,4.75], h:0,
+   links:[['galeria'],['pileta'],['fondo']]},
+ {id:'fondo', n:'Parque alto del fondo', g:'Exterior', p:[0.5,-36.0,7.0], h:0,
+   links:[['jardin']]},
+ {id:'recibidor', n:'Recibidor', g:'Planta baja', p:[-1.9,4.6,4.8], h:200,
+   links:[['terraza',[-1.9,6.9,3.25],'Salir a la terraza'],['living'],['comedor'],['sala_tv',[-3.95,4.05,3.22],'Sala de TV'],['dorm4',[0.05,5.95,3.22],'Dormitorio 4'],
+          ['estar',[2.2,0.95,3.75],'Subir al 1er piso','esc'],['garage',[1.9,2.2,3.1],'Bajar al garage','esc']]},
+ {id:'living', n:'Living · doble altura', g:'Planta baja', p:[-3.2,-2.6,4.8], h:250,
+   links:[['comedor'],['cocina'],['galeria'],['recibidor'],['sala_tv',[-3.95,4.05,3.22],'Sala de TV']]},
+ {id:'comedor', n:'Comedor', g:'Planta baja', p:[1.2,-2.2,4.8], h:160,
+   links:[['living'],['cocina'],['galeria'],['recibidor'],
+          ['estar',[2.2,0.95,3.75],'Subir al 1er piso','esc'],['garage',[1.9,2.2,3.1],'Bajar al garage','esc']]},
+ {id:'cocina', n:'Cocina', g:'Planta baja', p:[4.0,-4.6,4.8], h:300,
+   links:[['comedor'],['living'],['galeria']]},
+ {id:'sala_tv', n:'Sala de TV', g:'Planta baja', p:[-4.6,3.9,4.8], h:250,
+   links:[['recibidor',[-3.8,4.05,3.22],'Recibidor'],['living']]},
+ {id:'dorm4', n:'Dormitorio 4 en suite', g:'Planta baja', p:[3.9,4.6,4.8], h:220,
+   links:[['recibidor',[0.25,5.95,3.22],'Recibidor']]},
+ {id:'huesped', n:'Dormitorio de huéspedes', g:'Planta baja', p:[5.9,-3.9,4.8], h:30,
+   links:[['galeria',[7.2,-7.2,3.2],'Galería']]},
+ {id:'estar', n:'Estar y biblioteca', g:'1er piso', p:[-3.2,-0.3,8.2], h:225,
+   links:[['dorm2',[-1.5,-0.82,6.62],'Dormitorio 2'],['dorm3',[5.4,-0.82,6.62],'Dormitorio 3'],['dorm5',[-2.6,3.4,6.62],'Dormitorio 5'],['juegos',[0.2,3.5,6.62],'Sala de juegos'],
+          ['recibidor',[1.9,2.2,6.4],'Bajar a planta baja','esc'],['suite',[2.2,0.95,7.2],'Subir a la suite','esc']]},
+ {id:'dorm2', n:'Dormitorio 2', g:'1er piso', p:[-1.3,-3.0,8.2], h:90,
+   links:[['estar',[-1.5,-0.7,6.62],'Estar']]},
+ {id:'dorm3', n:'Dormitorio 3', g:'1er piso', p:[5.6,-3.6,8.2], h:270,
+   links:[['estar',[5.4,-0.7,6.62],'Estar']]},
+ {id:'dorm5', n:'Dormitorio 5', g:'1er piso', p:[-3.6,4.6,8.2], h:240,
+   links:[['estar',[-2.5,3.4,6.62],'Estar'],['juegos',[0.2,3.5,6.62],'Sala de juegos']]},
+ {id:'juegos', n:'Sala de juegos', g:'1er piso', p:[3.3,3.3,8.2], h:90,
+   links:[['estar',[0.1,3.5,6.62],'Estar'],['dorm5',[-2.6,3.4,6.62],'Dormitorio 5']]},
+ {id:'suite', n:'Suite principal', g:'Suite', p:[1.7,-1.7,11.5], h:240,
+   links:[['terraza_alta',[-0.5,-4.1,9.92],'Terraza'],['estar',[1.9,2.2,9.7],'Bajar al 1er piso','esc']]},
+ {id:'terraza_alta', n:'Terraza de la suite', g:'Suite', p:[-5.2,-2.4,11.55], h:180,
+   links:[['suite',[-0.5,-3.7,9.92],'Suite']]},
+ {id:'garage', n:'Garage', g:'Garage', p:[0.0,3.8,1.6], h:0,
+   links:[['vinoteca',[-3.3,3.5,0.02],'Vinoteca'],['calle',[0,10.0,0.05],'Salir a la calle'],['recibidor',[1.9,0.95,0.6],'Subir a la casa','esc']]},
+ {id:'vinoteca', n:'Vinoteca', g:'Garage', p:[-3.7,0.9,1.6], h:270,
+   links:[['garage',[-2.6,3.6,0.02],'Garage']]},
 ];
 const POR_ID = Object.fromEntries(NODOS.map(n=>[n.id,n]));
 const RAD = Math.PI/180;
@@ -359,11 +378,13 @@ const K=2.9, MX=x=>(12-x)*K, MY=y=>(y+41)*K;       // la calle queda abajo, el p
 function rect(x0,y0,x1,y1,est){ return `<rect x="${MX(Math.max(x0,x1))}" y="${MY(Math.min(y0,y1))}" width="${Math.abs(x1-x0)*K}" height="${Math.abs(y1-y0)*K}" ${est}/>`; }
 function pintarMapa(){
   let s=`<svg viewBox="0 0 ${24*K} ${68*K}" xmlns="http://www.w3.org/2000/svg">`;
-  s+=rect(-12,23,12,27,'fill="rgba(244,239,230,.07)"');                                   // calle
-  s+=rect(-6.6,0,6.6,10,'fill="rgba(244,239,230,.08)" stroke="rgba(244,239,230,.25)" stroke-width=".6"');   // garage / techo verde
-  s+=rect(-9.25,-10,9.25,-0.5,'fill="rgba(244,239,230,.14)" stroke="rgba(244,239,230,.5)" stroke-width=".8"'); // casa
-  s+=rect(-9.25,-14.5,9.25,-10,'fill="rgba(244,239,230,.06)" stroke="rgba(244,239,230,.22)" stroke-width=".6"'); // galería
-  s+=rect(-2,-33,2,-24,'fill="rgba(110,190,200,.55)"');                                     // pileta
+  s+=rect(-12,24.5,12,27,'fill="rgba(244,239,230,.07)"');                                  // calle
+  s+=rect(-7,6.75,7,10.25,'fill="rgba(244,239,230,.08)" stroke="rgba(244,239,230,.25)" stroke-width=".6"'); // terraza de entrada sobre el garage
+  s+=rect(-8.55,6.75,-7,13.4,'fill="rgba(244,239,230,.06)"');                               // escalera exterior
+  s+=rect(-9.25,-7.1,9.25,6.75,'fill="rgba(244,239,230,.14)" stroke="rgba(244,239,230,.5)" stroke-width=".8"'); // casa (PB 18,50 x 13,85)
+  s+=rect(-9.25,-11.6,9.25,-7.1,'fill="rgba(244,239,230,.06)" stroke="rgba(244,239,230,.22)" stroke-width=".6"'); // galería
+  s+=rect(-5.5,-16.6,5.5,-13.1,'fill="rgba(110,190,200,.55)"');                             // pileta paralela
+  s+=rect(-12,-29.55,12,-29.25,'fill="rgba(244,239,230,.25)"');                             // muro al parque alto
   const cx=MX(actual.p[0]), cy=MY(actual.p[1]), a=FOV*.62;
   const cono=(h)=>`${cx-Math.sin(h)*26},${cy+Math.cos(h)*26}`;
   s+=`<polygon id="cono" points="${cx},${cy} ${cono(H-a)} ${cono(H+a)}" fill="rgba(200,164,106,.38)"/>`;
@@ -399,7 +420,7 @@ function cuadro(){
   medir(); armarNav();
   if(window.innerWidth<window.innerHeight) FOV=92*RAD;
   const pedido=location.hash.slice(1);
-  actual = POR_ID[pedido] || POR_ID['pileta'];
+  actual = POR_ID[pedido] || POR_ID['jardin'];
   let tx;
   try{ tx=await pano(actual.id); }
   catch(e){ document.getElementById('carga').textContent='No se pudo cargar el recorrido'; return; }
